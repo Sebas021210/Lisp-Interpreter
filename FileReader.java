@@ -13,8 +13,8 @@ import java.util.Scanner;
  * @version 22/03/2022
  */
 
-public class FileReader {
-ArrayList<String> Lines = new ArrayList<String>();
+class FileReader {
+	ArrayList<String> Lines = new ArrayList<String>();
 	
 	/**
  * Metodo para la lectura del archivo
@@ -27,8 +27,11 @@ ArrayList<String> Lines = new ArrayList<String>();
 		Scanner scanner  = new Scanner(new File(fileName));
 		while(scanner.hasNextLine()) {
 			String line = scanner.nextLine();
+			line = line.substring(1, line.length()-1);
 			Lines.add(line);
 		}
 		return Lines;
 	}
+
+
 }
