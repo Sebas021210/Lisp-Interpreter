@@ -21,7 +21,9 @@ class MainClass {
 
 			CodeLines = reader.readingFile(file_name);
 			for(String s : CodeLines){
+
 				System.out.println("(" + s + ")");
+
 				Lista inst = parser.toLista(s);
 				switch(parser.verifyLInst(inst)){
 					case "setq":
@@ -30,7 +32,7 @@ class MainClass {
 						break;
 
 					case "a":
-						System.out.println(eval.chiquitin(inst));
+						System.out.println(eval.operacionAritmetica(inst));
 						break;
 
 					case "print":

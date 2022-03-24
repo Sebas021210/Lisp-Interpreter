@@ -2,7 +2,7 @@ import java.util.HashMap;
 import java.util.ArrayList;
 
 class Evaluate{
-	
+
 	HashMap<String, Integer> vars;
 
 	public Evaluate(){
@@ -17,15 +17,17 @@ class Evaluate{
 			if(l.getElemAt(1).isToken()){
 				if(searchVar(l.getElemAt(1).toString()) != null){
 					vars.put(l.getElemAt(0).toString(), searchVar(l.getElemAt(1).toString()));
-				} else {
+				} 
+				else {
 					System.out.println("??");
 				}
-			} else {
+			} 
+			else {
 				//FALTA VERIFICAR SI EXISTE LA FUNCION PERO TODAVIA NO SÉ CREAR FUNCIONES :DDDDD
-				vars.put(l.getElemAt(0).toString(), chiquitin(l.getElemAt(1).toLista()));
+				vars.put(l.getElemAt(0).toString(), operacionAritmetica(l.getElemAt(1).toLista()));
 			}
 		}
-		
+
 	}
 
 	public HashMap<String, Integer> getVars(){
@@ -35,53 +37,103 @@ class Evaluate{
 	public Integer searchVar(String k){
 		if(vars.containsKey(k)){
 			return vars.get(k);
-		} else {
+		} 
+		else {
 			return null;
 		}
 	}
 
-	public int chiquitin(Lista l){
+	public int operacionAritmetica(Lista l){
 		ArrayList<Integer> operandos = new ArrayList<Integer>();
 		int tot = 0;
+
 		switch(l.getInst()){
-			case "+":
-				for(Elemento e : l.getElems()){
-					if(e.isToken()){
-						try{
-							operandos.add(Integer.parseInt(e.toString()));
-						} catch(Exception err){
-							operandos.add(searchVar(e.toString()));
-						}
-						
-					} else{
-						operandos.add(chiquitin(e.toLista()));
+		case "+":
+			for(Elemento e : l.getElems()){
+				if(e.isToken()){
+					try{
+						operandos.add(Integer.parseInt(e.toString()));
+					} 
+					catch(Exception err){
+						operandos.add(searchVar(e.toString()));
 					}
+
+				} 
+				else{
+					operandos.add(operacionAritmetica(e.toLista()));
 				}
-				for(int a : operandos){
-					tot += a;
-				}
-				break;
-			case "-":
-				for(Elemento e : l.getElems()){
-					if(e.isToken()){
-						try{
-							operandos.add(Integer.parseInt(e.toString()));
-						} catch(Exception err){
-							operandos.add(searchVar(e.toString()));
-						}
-						
-					} else{
-						operandos.add(chiquitin(e.toLista()));
+			}
+			for(int i : operandos){
+				tot += i;
+			}
+			break;
+
+		case "-":
+			for(Elemento e : l.getElems()){
+				if(e.isToken()){
+					try{
+						operandos.add(Integer.parseInt(e.toString()));
+					} catch(Exception err){
+						operandos.add(searchVar(e.toString()));
 					}
+
+				} 
+				else{
+					operandos.add(operacionAritmetica(e.toLista()));
 				}
-				for(int i = 0; i<operandos.size(); i++){
-					if(i==0){
-						tot+=operandos.get(i);
-					} else {
-						tot -= operandos.get(i);
+			}
+			for(int i = 0; i<operandos.size(); i++){
+				if(i==0){
+					tot+=operandos.get(i);
+				} 
+				else {
+					tot -= operandos.get(i);
+				}
+			}
+			break;
+
+		case "*":
+			for(Elemento e : l.getElems()){
+				if(e.isToken()){
+					try{
+						operandos.add(Integer.parseInt(e.toString()));
+					} catch(Exception err){
+						operandos.add(searchVar(e.toString()));
 					}
-				}
-				break;
+
+				} 
+				else{
+					operandos.add(operacionAritmetica(e.toLista()));
+				}	
+			}
+
+			tot = operandos.get(0);
+
+			for(int i = 1; i<operandos.size(); i++){
+				tot *= operandos.get(i);
+			}
+
+		case "/":
+			for(Elemento e : l.getElems()){
+				if(e.isToken()){
+					try{
+						operandos.add(Integer.parseInt(e.toString()));
+					} catch(Exception err){
+						operandos.add(searchVar(e.toString()));
+					}
+
+				} 
+				else{
+					operandos.add(operacionAritmetica(e.toLista()));
+				}	
+			}
+
+			tot = operandos.get(0);
+
+			for(int i = 1; i<operandos.size(); i++){
+				tot /= operandos.get(i);
+			}
+
 		}
 		return tot;
 	}

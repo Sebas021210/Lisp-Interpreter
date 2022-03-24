@@ -8,6 +8,7 @@ class Parse{
 		String inst = "";
 		String exp = "";
 		a += " ";
+
 		ArrayList<Elemento> elems = new ArrayList<Elemento>();
 		for(int i = 0 ; i < a.length() ; i++){
 			if(!Character.isWhitespace(a.charAt(i))){
@@ -100,7 +101,7 @@ class Parse{
 		if(l.getElemAt(0).isToken() && l.getElemAt(1).isToken()){
 			return false;
 		} else {
-			System.out.println("asfbnakf");
+			System.out.println("Ha ocurrido un Error");
 			return false;
 		}
 	}
