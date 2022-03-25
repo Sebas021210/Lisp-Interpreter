@@ -25,7 +25,6 @@ class MainClass {
 				System.out.println("(" + s + ")");
 
 				Lista inst = parser.toLista(s);
-				
 
 				switch(parser.verifyLInst(inst, eval)){
 					case "setq":
@@ -53,9 +52,15 @@ class MainClass {
 						System.out.println(s.replace("quote", ""));
 						break;
 
+					case "cond":
+						eval.cond(inst);
+						break;
+
 					default:
 						if(eval.getFunciones().containsKey(inst.getInst())){
-							eval.execFunc(inst.getInst(), eval.getParams(new Token(inst.getElemAt(0).toString())));
+							System.out.println(eval.execFunc(inst.getInst(), eval.getParams(new Token(inst.getElemAt(0).toString()))));
+						} else {
+							System.out.println("afjnanñfo");
 						}
 				}
 			}

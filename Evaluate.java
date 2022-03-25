@@ -4,12 +4,12 @@ import java.util.Arrays;
 
 class Evaluate{
 
-	HashMap<String, Integer> vars;
+	HashMap<String, Float> vars;
 	HashMap<String, ArrayList<Elemento>> funciones;
 	HashMap<String, String> param;
 
 	public Evaluate(){
-		vars = new HashMap<String, Integer>();
+		vars = new HashMap<String, Float>();
 		funciones = new HashMap<String, ArrayList<Elemento>>();
 		param = new HashMap<String, String>();
 	}
@@ -17,13 +17,13 @@ class Evaluate{
 	public void setq(Lista l){
 		try{
 			int val = Integer.parseInt(l.getElemAt(1).toString());
-			vars.put(l.getElemAt(0).toString(), Integer.parseInt(l.getElemAt(1).toString()));
+			vars.put(l.getElemAt(0).toString(), Float.parseFloat(l.getElemAt(1).toString()));
 		} catch(Exception e){
 			if(l.getElemAt(1).isToken()){
 				if(searchVar(l.getElemAt(1).toString()) != null){
 					vars.put(l.getElemAt(0).toString(), searchVar(l.getElemAt(1).toString()));
 				} else if(searchParam(l.getElemAt(1).toString()) != null){
-					vars.put(l.getElemAt(0).toString(), Integer.parseInt(searchParam(l.getElemAt(1).toString())));
+					vars.put(l.getElemAt(0).toString(), Float.parseFloat(searchParam(l.getElemAt(1).toString())));
 				} 
 				else {
 					System.out.println("??");
@@ -37,11 +37,11 @@ class Evaluate{
 
 	}
 
-	public HashMap<String, Integer> getVars(){
+	public HashMap<String, Float> getVars(){
 		return vars;
 	}
 
-	public Integer searchVar(String k){
+	public Float searchVar(String k){
 		if(vars.containsKey(k)){
 			return vars.get(k);
 		} 
@@ -58,20 +58,19 @@ class Evaluate{
 		}
 	}
 
-	public int operacionAritmetica(Lista l){
-		ArrayList<Integer> operandos = new ArrayList<Integer>();
-		int tot = 0;
+	public float operacionAritmetica(Lista l){
+		ArrayList<Float> operandos = new ArrayList<Float>();
+		float tot = 0;
 		for(Elemento e : l.getElems()){
-			//System.out.println(e.isToken());
 			if(e.isToken()){
 				try{
-					operandos.add(Integer.parseInt(e.toString()));
+					operandos.add(Float.parseFloat(e.toString()));
 				} catch(Exception err){
 					if(searchVar(e.toString())!=null){
-						operandos.add(searchVar(e.toString()));
+						operandos.add(searchVar(e.toString()).floatValue());
 					} else if(searchParam(e.toString())!=null){
 						try{
-							operandos.add(Integer.parseInt(searchParam(e.toString())));
+							operandos.add(Float.parseFloat(searchParam(e.toString())));
 						} catch(Exception err2){
 							System.out.println("aiksfaiuf");
 						}
@@ -81,14 +80,15 @@ class Evaluate{
 				}
 				
 			} else{
-				operandos.add(operacionAritmetica(e.toLista()));
+				Float aaaa = operacionAritmetica(e.toLista());
+				operandos.add(aaaa.floatValue());
 			}
 		}
 
 		switch(l.getInst()){
 
 			case "+":
-			for(int i : operandos){
+			for(float i : operandos){
 				tot += i;
 			}
 			break;
@@ -126,7 +126,7 @@ class Evaluate{
 	public String print(Lista l){
 		String temp = l.getElemAt(0).toString();
 		if(searchVar(temp)!=null){
-			return Integer.toString(searchVar(temp));
+			return Float.toString(searchVar(temp));
 		} else if(searchParam(temp)!=null){
 			return searchParam(temp);
 		} else{
@@ -160,11 +160,26 @@ class Evaluate{
 
 	public String execFunc(String k, ArrayList<String> params){
 
+		Parse parser = new Parse();
 		Evaluate eval = new Evaluate();
 		ArrayList<String> funcParams = getParams(new Token(funciones.get(k).get(0).toString()));
+
 		for(int i = 0; i<funcParams.size(); i++){
 			try{
-				eval.putParam(funcParams.get(i), params.get(i));
+				//System.out.println(params.get(i));
+				if(params.get(i).charAt(0) == '(' && params.get(i).charAt(params.get(i).length()-1) == ')'){
+					//System.out.println(params.get(i).substring(1, params.get(i).length()-1));
+					Lista b = parser.toLista(params.get(i).substring(1, params.get(i).length()-1));
+					if(parser.verifyLInst(b, this).equals("a")){
+						eval.putParam(funcParams.get(i), Float.toString(operacionAritmetica(b)));
+					} else if(parser.verifyLInst(b, this).equals(b.getInst().toLowerCase())){
+						eval.putParam(funcParams.get(i), execFunc(b.getInst(), getParams(new Token(b.getElemAt(0).toString()))));
+					}
+				} else{
+					//System.out.println("aaa");
+					eval.putParam(funcParams.get(i), params.get(i));
+				}
+				
 			} catch(NullPointerException e){
 				System.out.println("xjfjxhxzh");
 				return " ";
@@ -176,9 +191,8 @@ class Evaluate{
 			instrucciones.add(funciones.get(k).get(i).toLista());
 		}
 
-		Parse parser = new Parse();
 		for(Lista l : instrucciones){
-			//System.out.println(l);
+			System.out.println(l);
 			switch(parser.verifyLInst(l, this)){
 				case "setq":
 					eval.setq(l);
@@ -186,17 +200,19 @@ class Evaluate{
 					break;
 
 				case "a":
-					System.out.println(l);
-					System.out.println(eval.operacionAritmetica(l));
-					break;
+					//System.out.println(l);
+					return Float.toString(eval.operacionAritmetica(l));
 
 				case "print":
 					System.out.println(eval.print(l));
 					break;
 
+				case "cond":
+					return eval.cond(l);
+
 				default:
 					if(funciones.containsKey(l.getInst())){
-						execFunc(l.getInst(), getParams(new Token(l.getElemAt(0).toString())));
+						return execFunc(l.getInst(), getParams(new Token(l.getElemAt(0).toString())));
 					}
 			}
 		}
@@ -207,11 +223,129 @@ class Evaluate{
 		ArrayList<String> temp = new ArrayList<String>();
 		String params = t.toString().substring(1, t.toString().length()-1);
 		temp = new ArrayList<>(Arrays.asList(params.split(",")));
-		//System.out.println(temp);
+		
 		return temp;
 	}
 
 	public HashMap<String, ArrayList<Elemento>> getFunciones(){
 		return funciones;
+	}
+
+	public boolean evalCond(Lista l, Evaluate eval){
+		ArrayList<Float> operandos = new ArrayList<Float>();
+		for(Elemento e : l.getElems()){
+			//System.out.println(e);
+			if(e.isToken()){
+				try{
+					operandos.add(Float.parseFloat(e.toString()));
+				} catch(Exception err){
+					if(searchVar(e.toString())!=null){
+						operandos.add(eval.searchVar(e.toString()).floatValue());
+					} else if(searchParam(e.toString())!=null){
+						try{
+							operandos.add(Float.parseFloat(eval.searchParam(e.toString())));
+						} catch(Exception err2){
+							System.out.println("aiksfaiuf");
+						}
+						
+					}
+					
+				}
+				
+			} else{
+				Float aaaa = operacionAritmetica(e.toLista());
+				operandos.add(aaaa.floatValue());
+			}
+		}
+
+		//System.out.println(l);
+		//System.out.println(operandos);
+
+		switch(l.getInst()){
+
+			case "=":
+				//System.out.println(Math.round(operandos.get(0)) == Math.round(operandos.get(1)));
+				return Math.round(operandos.get(0)) == Math.round(operandos.get(1));
+			case "<":
+				//System.out.println(Math.round(operandos.get(0)) < Math.round(operandos.get(1)));
+				return Math.round(operandos.get(0)) < Math.round(operandos.get(1));
+			case ">":
+				//System.out.println(Math.round(operandos.get(0)) > Math.round(operandos.get(1)));
+				return Math.round(operandos.get(0)) > Math.round(operandos.get(1));
+		}
+		return false;
+	}
+
+	public String cond(Lista l){
+		Parse parser = new Parse();
+		boolean temp = false;
+		for(Elemento h : l.getElems()){
+			if(h.toLista().getInst().equals("t") && !temp){
+				
+				for(Elemento f : h.toLista().getElems()){
+					switch(parser.verifyLInst(f.toLista(), this)){
+						case "setq":
+							setq(f.toLista());
+							System.out.println(getVars());
+							temp = true;
+							break;
+
+						case "a":
+							System.out.println(operacionAritmetica(f.toLista()));
+							temp = true;
+							break;
+
+						case "print":
+							System.out.println(print(f.toLista()));
+							temp = true;
+							break;
+
+						case "cond":
+							cond(f.toLista());
+							temp = true;
+							break;
+
+						default:
+							if(funciones.containsKey(f.toLista().getInst())){
+								execFunc(f.toLista().getInst(), getParams(new Token(f.toLista().getElemAt(0).toString())));
+								temp = true;
+							}
+					}
+				}
+
+			} else if(evalCond(parser.toLista(h.toLista().getInst().substring(1, h.toLista().getInst().length())), this)){
+				for(Elemento f : h.toLista().getElems()){
+					switch(parser.verifyLInst(f.toLista(), this)){
+						case "setq":
+							setq(f.toLista());
+							System.out.println(getVars());
+							temp = true;
+							break;
+
+						case "a":
+							System.out.println(operacionAritmetica(f.toLista()));
+							temp = true;
+							break;
+
+						case "print":
+							System.out.println(print(f.toLista()));
+							temp = true;
+							break;
+
+						case "cond":
+							cond(f.toLista());
+							temp = true;
+							break;
+
+						default:
+							if(funciones.containsKey(f.toLista().getInst())){
+								execFunc(f.toLista().getInst(), getParams(new Token(f.toLista().getElemAt(0).toString())));
+								temp = true;
+							}
+					}
+				}
+			}
+		}
+		return " ";
 	}
 }

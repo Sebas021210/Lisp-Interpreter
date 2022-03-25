@@ -3,70 +3,84 @@ import java.util.ArrayList;
 
 class Parse{
 
-	Lista toLista(String a){
-		boolean modo = false, activo = false, flag = true;
+	public Lista toLista(String a){
+		boolean modo = false, activo = false, flag = true, activo2 = false;
 		String inst = "", exp = "";
-		int cont = 0, index = 0;
+		int cont = 0, index = 0, cont2 = 0, index2 = 0;
 		a += " ";
 		ArrayList<Elemento> elems = new ArrayList<Elemento>();
-		for(int i = 0 ; i < a.length() ; i++){
-			if(modo){
-				if(Character.compare(a.charAt(i), "(".charAt(0)) == 0){
-					activo = true;
-				}
+		for(int i = 0; i<a.length(); i++){
+			if(Character.compare(a.charAt(i), "[".charAt(0)) == 0){
+				activo2=true;
 			}
-			if(modo && activo){
-				if(Character.compare(a.charAt(i), "(".charAt(0)) == 0){
-					cont++;
-					if(cont == 1){
-						index = i;
-					}
-					activo = true;
-				} else if(Character.compare(a.charAt(i), ")".charAt(0)) == 0){
-					cont--;
-					if(cont == 0){
-						elems.add(toLista(a.substring(index+1, i)));
-						activo = false;
-					}
-					
+			if(activo2){
+				if(Character.compare(a.charAt(i), "[".charAt(0)) == 0){
+					index2 = i;
+				} else if(Character.compare(a.charAt(i), "]".charAt(0)) == 0){
+					System.out.println(a.substring(index2, i+1));
+					elems.add(new Token(a.substring(index2, i+1)));
+					activo2 = false;
 				}
-			}
-			else if(!Character.isWhitespace(a.charAt(i))){
-				if(Character.compare(a.charAt(i), "(".charAt(0)) == 0){
-					elems.add(toLista(a.substring(i+1, a.lastIndexOf(")"))));
-					i = a.lastIndexOf(")")+1;
-				} else if(Character.compare(a.charAt(i), '"') == 0){
-					elems.add(new Token(a.substring(i, a.lastIndexOf('"')+1)));
-					i = a.lastIndexOf('"')+1;
-					exp = "";
-				} else {
-					exp += a.charAt(i);
+			} else if(flag && Character.compare(a.charAt(i), "(".charAt(0)) == 0){
+				cont++;
+				if(cont == 1){
+					index = i;
 				}
-			} else {
-				if(!exp.equals("")){
-					if(flag){
-						//System.out.println("Instruccion: " + exp);
-						inst = exp;
-						flag = false;
-						if(inst.toLowerCase().equals("defun")){
-							modo = true;
-						}
-					
+				activo = true;
+			} else if(flag && Character.compare(a.charAt(i), ")".charAt(0)) == 0){
+				cont--;
+				if(cont == 0){
+					inst = a.substring(index, i+1);
+					flag = false;
+					activo = false;
+				}
+			} else if(Character.compare(a.charAt(i), "(".charAt(0)) == 0){
+				cont++;
+				if(cont == 1){
+					index = i;
+				}
+				activo = true;
+			} else if(Character.compare(a.charAt(i), ")".charAt(0)) == 0){
+				cont--;
+				if(cont == 0){
+					System.out.println(a.substring(index+1, i));
+					elems.add(toLista(a.substring(index+1, i)));
+					activo = false;
+				}
+			} else if(!activo && !activo2){
+				if(!Character.isWhitespace(a.charAt(i))){
+					if(Character.compare(a.charAt(i), '"') == 0){
+						elems.add(new Token(a.substring(i, a.lastIndexOf('"')+1)));
+						i = a.lastIndexOf('"')+1;
+						exp = "";
 					} else {
-						//System.out.println("Token: " + exp);
-						elems.add(new Token(exp));
+						exp += a.charAt(i);
 					}
-					exp = "";
-				}
+				} else {
+					if(!exp.equals("")){
+						if(flag){
+							//System.out.println("Instruccion: " + exp);
+							inst = exp;
+							flag = false;
+					
+						} else {
+							//System.out.println("Token: " + exp);
+							elems.add(new Token(exp));
+						}
+						exp = "";
+					}
+				} 
 			}
-		
 		}
 		//System.out.println(new Lista(new Token(inst), elems));
 		return new Lista(new Token(inst), elems);
+
 	}
 
 	public String verifyLInst(Lista l, Evaluate eval){
+		System.out.println(l.getInst().toLowerCase());
 		switch(l.getInst().toLowerCase()){
+
 			case "list":
 				if(evaluarLista(l)){
 					return "list";
@@ -99,6 +113,12 @@ class Parse{
 			case "defun":
 				if(verDefun(l)){
 					return "defun";
+				}
+				break;
+
+			case "cond":
+				if(verCond(l)){
+					return "cond";
 				}
 				break;
 
@@ -172,6 +192,17 @@ class Parse{
 			}
 		}
 		System.out.println("Ha ocurrido un Error");
+		return false;
+	}
+
+	public boolean verCond(Lista l){
+		if(!l.getElemAt(0).isToken()){
+			if(l.getElemAt(0).toLista().getInst().charAt(0) == '(' && l.getElemAt(0).toLista().getInst().charAt(l.getElemAt(0).toLista().getInst().length() - 1) == ')'){
+				if(!l.getElemAt(0).toLista().getElemAt(0).isToken()){
+					return true;
+				}
+			}
+		}
 		return false;
 	}
 }
