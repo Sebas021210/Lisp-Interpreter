@@ -143,4 +143,10 @@ class Evaluate{
 		return temp.substring(1, temp.length()-1);
 	}
 
+	public String lista(Lista l){
+		String evaluacionSintaxis = l.toString();
+		evaluacionSintaxis = evaluacionSintaxis.replace("list ", "");
+		evaluacionSintaxis = evaluacionSintaxis.replace("\'", "");
+		return evaluacionSintaxis;
+	}
 }

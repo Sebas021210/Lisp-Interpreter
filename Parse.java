@@ -28,41 +28,47 @@ class Parse{
 						//System.out.println("Instruccion: " + exp);
 						inst = exp;
 						flag = false;
-					
+
 					} else {
-						//System.out.println("Token: " + exp);
+						System.out.println("Token: " + exp);
 						elems.add(new Token(exp));
 					}
 					exp = "";
 				}
 			}
-		
+
 		}
 		return new Lista(new Token(inst.toLowerCase()), elems);
 	}
 
 	public String verifyLInst(Lista l){
 		switch(l.getInst().toLowerCase()){
-			case "setq":
-				if(verSetq(l)){
-					return "setq";
-				}
-				break;
+		case "list":
+			if(evaluarLista(l)){
+				return "list";
+			}
+			break;
 
-			case "+":
-			case "-":
-			case "/":
-			case "*":
-				return "a";
+		case "setq":
+			if(verSetq(l)){
+				return "setq";
+			}
+			break;
 
-			case "print":
-				if(verPrint(l)){
-					return "print";
-				}
-				break;
+		case "+":
+		case "-":
+		case "/":
+		case "*":
+			return "a";
 
-			default:
-				return "aksf";
+		case "print":
+			if(verPrint(l)){
+				return "print";
+			}
+			break;
+
+		default:
+			return "aksf";
 		}
 		return "anf";
 	}
@@ -94,7 +100,6 @@ class Parse{
 		}
 		System.out.println("????");
 		return false;
-		//HAY QUE REVISAR TAMBIEN SI SE PIDE QUE SE IMPRIMA EL OUTPUT DE UNA FUNCION PERO YA SABEMOS QUE ENBECES LA VIDA ES INJUSTA
 	}
 
 	public boolean verDefun(Lista l){
@@ -105,4 +110,16 @@ class Parse{
 			return false;
 		}
 	}
+
+	public boolean evaluarLista(Lista l){
+		if(l.getElemAt(0).isToken()){
+			String evaluacionSintaxis = l.getElemAt(0).toString();
+			if(evaluacionSintaxis.charAt(0) == '\'' || evaluacionSintaxis.charAt(0) == ' '){
+				return true;
+			}
+		}
+		System.out.println("Ha ocurrido un Error");
+		return false;
+	}
 }
+

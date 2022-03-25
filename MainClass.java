@@ -25,6 +25,8 @@ class MainClass {
 				System.out.println("(" + s + ")");
 
 				Lista inst = parser.toLista(s);
+				
+
 				switch(parser.verifyLInst(inst)){
 					case "setq":
 						eval.setq(inst);
@@ -37,6 +39,10 @@ class MainClass {
 
 					case "print":
 						System.out.println(eval.print(inst));
+						break;
+
+					case "list":
+						System.out.println(eval.lista(inst));
 						break;
 				}
 			}
