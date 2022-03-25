@@ -73,14 +73,16 @@ class Parse{
 				}
 				break;
 
+			
+			case "quote":
+				return "quote";
+
+
 			case "setq":
 				if(verSetq(l)){
 					return "setq";
 				}
 				break;
-			
-			case "quote":
-				return "quote";
 
 			case "+":
 			case "-":
