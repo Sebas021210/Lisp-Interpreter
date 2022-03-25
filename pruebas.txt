@@ -1,1 +1,1 @@
-(list 'A '(BC) 'D)
+(quote ABC)

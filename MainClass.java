@@ -27,7 +27,7 @@ class MainClass {
 				Lista inst = parser.toLista(s);
 				
 
-				switch(parser.verifyLInst(inst)){
+				switch(parser.verifyLInst(inst, eval)){
 					case "setq":
 						eval.setq(inst);
 						System.out.println(eval.getVars());
@@ -44,6 +44,19 @@ class MainClass {
 					case "list":
 						System.out.println(eval.lista(inst));
 						break;
+
+					case "defun":
+						eval.defun(inst);
+						break;
+					
+					case "quote":
+						System.out.println(s.replace("quote", ""));
+						break;
+
+					default:
+						if(eval.getFunciones().containsKey(inst.getInst())){
+							eval.execFunc(inst.getInst(), eval.getParams(new Token(inst.getElemAt(0).toString())));
+						}
 				}
 			}
 

@@ -4,14 +4,34 @@ import java.util.ArrayList;
 class Parse{
 
 	Lista toLista(String a){
-		boolean flag = true;
-		String inst = "";
-		String exp = "";
+		boolean modo = false, activo = false, flag = true;
+		String inst = "", exp = "";
+		int cont = 0, index = 0;
 		a += " ";
-
 		ArrayList<Elemento> elems = new ArrayList<Elemento>();
 		for(int i = 0 ; i < a.length() ; i++){
-			if(!Character.isWhitespace(a.charAt(i))){
+			if(modo){
+				if(Character.compare(a.charAt(i), "(".charAt(0)) == 0){
+					activo = true;
+				}
+			}
+			if(modo && activo){
+				if(Character.compare(a.charAt(i), "(".charAt(0)) == 0){
+					cont++;
+					if(cont == 1){
+						index = i;
+					}
+					activo = true;
+				} else if(Character.compare(a.charAt(i), ")".charAt(0)) == 0){
+					cont--;
+					if(cont == 0){
+						elems.add(toLista(a.substring(index+1, i)));
+						activo = false;
+					}
+					
+				}
+			}
+			else if(!Character.isWhitespace(a.charAt(i))){
 				if(Character.compare(a.charAt(i), "(".charAt(0)) == 0){
 					elems.add(toLista(a.substring(i+1, a.lastIndexOf(")"))));
 					i = a.lastIndexOf(")")+1;
@@ -28,47 +48,63 @@ class Parse{
 						//System.out.println("Instruccion: " + exp);
 						inst = exp;
 						flag = false;
-
+						if(inst.toLowerCase().equals("defun")){
+							modo = true;
+						}
+					
 					} else {
-						System.out.println("Token: " + exp);
+						//System.out.println("Token: " + exp);
 						elems.add(new Token(exp));
 					}
 					exp = "";
 				}
 			}
-
+		
 		}
-		return new Lista(new Token(inst.toLowerCase()), elems);
+		//System.out.println(new Lista(new Token(inst), elems));
+		return new Lista(new Token(inst), elems);
 	}
 
-	public String verifyLInst(Lista l){
+	public String verifyLInst(Lista l, Evaluate eval){
 		switch(l.getInst().toLowerCase()){
-		case "list":
-			if(evaluarLista(l)){
-				return "list";
-			}
-			break;
+			case "list":
+				if(evaluarLista(l)){
+					return "list";
+				}
+				break;
 
-		case "setq":
-			if(verSetq(l)){
-				return "setq";
-			}
-			break;
+			case "setq":
+				if(verSetq(l)){
+					return "setq";
+				}
+				break;
+			
+			case "quote":
+				return "quote";
 
-		case "+":
-		case "-":
-		case "/":
-		case "*":
-			return "a";
+			case "+":
+			case "-":
+			case "/":
+			case "*":
+				return "a";
 
-		case "print":
-			if(verPrint(l)){
-				return "print";
-			}
-			break;
+			case "print":
+				if(verPrint(l)){
+					return "print";
+				}
+				break;
 
-		default:
-			return "aksf";
+			case "defun":
+				if(verDefun(l)){
+					return "defun";
+				}
+				break;
+
+			default:
+				if(eval.getFunciones().containsKey(l.getInst().toLowerCase())){
+					return l.getInst().toLowerCase();
+				}
+				return "aksf";
 		}
 		return "anf";
 	}
@@ -78,7 +114,7 @@ class Parse{
 			if(l.getElemAt(1).isToken()){
 				return true;
 			} else {
-				if(verifyLInst(l.getElemAt(1).toLista()).equals("a")){
+				if(verifyLInst(l.getElemAt(1).toLista(), new Evaluate()).equals("a")){
 					return true;
 				}
 				System.out.println("Valor invalido");
@@ -95,6 +131,8 @@ class Parse{
 
 			if(temp.charAt(0) == '"' && temp.charAt(temp.length()-1) == '"'){
 				return true;
+			} else{
+				return true;
 			}
 
 		}
@@ -104,11 +142,24 @@ class Parse{
 
 	public boolean verDefun(Lista l){
 		if(l.getElemAt(0).isToken() && l.getElemAt(1).isToken()){
-			return false;
+			if(l.getElemAt(1).toString().charAt(0) == '[' && l.getElemAt(1).toString().charAt(l.getElemAt(1).toString().length()-1) == ']'){
+				if(l.getElems().size() > 2){
+					boolean flag = true;
+					for(int i = 2; i<l.getElems().size(); i++){
+						if(l.getElemAt(i).isToken()){
+							return false;
+						}
+						return true;
+					}
+				} else {
+					return false;
+				}
+			}
 		} else {
-			System.out.println("Ha ocurrido un Error");
+			System.out.println("asfbnakf");
 			return false;
 		}
+		return false;
 	}
 
 	public boolean evaluarLista(Lista l){
